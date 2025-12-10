@@ -8,7 +8,7 @@ export function sortStrings(arr, param = 'asc') {
   //создаём новый массив
   const sorted = [...arr];
 
-  // Сортируем с учетом русской и английской локалей, заглавные буквы — первыми
+  // Сортируем с учетом русской и английской локалей
   sorted.sort((a, b) => a.localeCompare(b, ['ru', 'en'], {
     caseFirst: 'upper', // Заглавные буквы идут первыми
     sensitivity: 'variant', // Учитываем регистр и диакритические знаки
