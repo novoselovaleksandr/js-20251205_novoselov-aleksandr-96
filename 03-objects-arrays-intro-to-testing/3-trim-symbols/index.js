@@ -8,7 +8,7 @@ export function trimSymbols(string, size) {
   if (size <= 0) {return '';}
 
   if (size === undefined) {
-    size = Infinity;
+    return string;
   }
 
   let counter = 0;
