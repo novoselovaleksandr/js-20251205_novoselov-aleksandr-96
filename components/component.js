@@ -10,6 +10,6 @@ export class Component {
     }
 
     get element() {
-      return this.#element;
+      return this.#element.firstElementChild;
     }
 }
