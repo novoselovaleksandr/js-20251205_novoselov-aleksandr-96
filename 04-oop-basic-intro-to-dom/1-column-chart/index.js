@@ -6,16 +6,18 @@ export default class ColumnChart extends Component {
   #value = 0;
   #link = '#';
   chartHeight = 50;
+  #formatHeading = data => data;
 
   constructor(options = {}) {
     super();
 
-    const { data = [], label = '', value = 0, link = '#'} = options;
+    const { data = [], label = '', value = 0, link = '#', formatHeading = data => data} = options;
 
     this.#data = data ?? this.#data;
     this.#label = label ?? this.#label;
     this.#value = value ?? this.#value;
     this.#link = link ?? this.#link;
+    this.#formatHeading = formatHeading ?? this.#formatHeading;
 
     this.render();
   }
@@ -23,6 +25,10 @@ export default class ColumnChart extends Component {
   update(data) {
     this.#data = data;
     this.render();
+  }
+
+  getTotalValue() {
+    return this.#formatHeading(this.#value);
   }
 
   template() {
@@ -36,7 +42,7 @@ export default class ColumnChart extends Component {
             </div>
             <div class="column-chart__container">
               <div data-element="header" class="column-chart__header">
-                ${this.#value}
+                ${this.getTotalValue()}
               </div>
               <div data-element="body" class="column-chart__chart">
               </div>
@@ -48,7 +54,7 @@ export default class ColumnChart extends Component {
               Total ${this.#label}
             </div>
             <div class="column-chart__container">
-              <div data-element="header" class="column-chart__header">${this.#value}</div>
+              <div data-element="header" class="column-chart__header">${this.getTotalValue()}</div>
               <div data-element="body" class="column-chart__chart">
               ${this.#data.map(item => {
   const percent = (item / maxValue * 100).toFixed(0);
