@@ -5,6 +5,7 @@ export default class ColumnChart extends Component {
   #label = '';
   #value = 0;
   #link = '#';
+  chartHeight = 50;
 
   constructor({ data, label, value, link = '#'}) {
     super();
@@ -23,6 +24,8 @@ export default class ColumnChart extends Component {
   }
 
   template() {
+    const maxValue = Math.max(...this.#data);
+    const scale = this.chartHeight / maxValue;
     return this.#data?.length === 0 
       ? ` <div class="column-chart column-chart_loading" style="--chart-height: 50">
             <div class="column-chart__title">
@@ -45,7 +48,10 @@ export default class ColumnChart extends Component {
             <div class="column-chart__container">
               <div data-element="header" class="column-chart__header">${this.#value}</div>
               <div data-element="body" class="column-chart__chart">
-              ${this.#data.map(value => `<div style="--value: ${value / 2}" data-tooltip="${value}%"></div>`) .join('\n')}
+              ${this.#data.map(item => {
+  const percent = (item / maxValue * 100).toFixed(0);
+  return `<div style="--value: ${Math.floor(item * scale)}" data-tooltip="${percent}%"></div>`;
+}).join('\n')}
               </div>
             </div>
           </div>

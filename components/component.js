@@ -1,15 +1,26 @@
 export class Component {
     #element = null;
+    #tagname = 'div'
 
     constructor(tagName = 'div') {
-      this.#element = document.createElement(tagName);
+      this.#tagname = tagName ?? this.#tagname;
     }
 
     set html(content) {
-      this.#element.innerHTML = content;
+      const elem = document.createElement(this.#tagname);
+      elem.innerHTML = content.trim();
+      this.#element = elem.firstElementChild;
     }
 
     get element() {
-      return this.#element.firstElementChild;
+      return this.#element;
+    }
+
+    remove() {
+      this.#element.remove();
+    }
+
+    destroy() {
+      this.#element = null;
     }
 }
