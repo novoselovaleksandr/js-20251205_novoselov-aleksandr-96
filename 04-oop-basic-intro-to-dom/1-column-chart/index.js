@@ -7,8 +7,10 @@ export default class ColumnChart extends Component {
   #link = '#';
   chartHeight = 50;
 
-  constructor({ data, label, value, link = '#'}) {
+  constructor(options = {}) {
     super();
+
+    const { data = [], label = '', value = 0, link = '#'} = options;
 
     this.#data = data ?? this.#data;
     this.#label = label ?? this.#label;
