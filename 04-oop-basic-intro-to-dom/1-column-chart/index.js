@@ -43,13 +43,13 @@ export default class ColumnChart extends Component {
   }
 
   template() {
-    const maxValue = Math.max(...this.#data);
+    const maxValue = this.isEmpty() ? 0 : Math.max(...this.#data);
     const scale = this.chartHeight / maxValue;
 
     return `<div class="column-chart ${this.isEmpty() ? 'column-chart_loading' : '' }" style="--chart-height: 50">
               <div class="column-chart__title">
                 Total ${this.#label}
-                ${this.isEmpty() ? '<a class="column-chart__link" href="${this.#link}">View all</a>' : ''}
+                ${this.isEmpty() ? `<a class="column-chart__link" href="${this.#link}">View all</a>` : ''}
               </div>
               <div class="column-chart__container">
                 <div data-element="header" class="column-chart__header">${this.getTotalValue()}</div>
