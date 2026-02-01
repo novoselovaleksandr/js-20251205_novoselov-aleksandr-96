@@ -18,8 +18,8 @@ export default class NotificationMessage extends Component {
       return this.duration ? this.duration / 1000 : 0;
     }
 
-    show() {
-      document.body.append(this.element);
+    show(target = document.body) {
+      target.append(this.element);
       setTimeout(() => this.remove(), this.duration);
     }
 
