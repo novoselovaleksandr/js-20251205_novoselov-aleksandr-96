@@ -4,7 +4,7 @@ export default class NotificationMessage extends Component {
     duration = 2000;
     #type = 'success';
 
-    constructor(message = '', { duration = 2000, type = 'success'}) {
+    constructor(message = '', { duration = 2000, type = 'success'} = {}) {
       super();
 
       this.#message = message;
@@ -14,6 +14,10 @@ export default class NotificationMessage extends Component {
       this.render();
     }
 
+    get animationDuration () {
+      return this.duration ? this.duration / 1000 : 0;
+    }
+
     show() {
       document.body.append(this.element);
       setTimeout(() => this.remove(), this.duration);
@@ -21,7 +25,7 @@ export default class NotificationMessage extends Component {
 
     template() {
       return `
-        <div class="notification success" style="--value:${this.duration}s">
+        <div class="notification success" style="--value:${this.animationDuration}s">
             <div class="timer"></div>
             <div class="inner-wrapper">
             <div class="notification-header">${this.#type}</div>
