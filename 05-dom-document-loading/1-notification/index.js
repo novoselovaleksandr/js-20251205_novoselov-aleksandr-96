@@ -25,7 +25,7 @@ export default class NotificationMessage extends Component {
 
     template() {
       return `
-        <div class="notification success" style="--value:${this.animationDuration}s">
+        <div class="$notification ${this.#type}" style="--value:${this.animationDuration}s">
             <div class="timer"></div>
             <div class="inner-wrapper">
             <div class="notification-header">${this.#type}</div>
