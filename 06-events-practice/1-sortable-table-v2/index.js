@@ -4,16 +4,18 @@ export default class SortableTable extends Component {
   #headerConfig = [];
   #data = [];
   #sorted = {};
+  isSortLocally = true;
   #arrow = null;
   #bodyElement = null;
   subElements = {}
 
-  constructor(headerConfig = [], {data = [], sorted = {}} = {}) {
+  constructor(headerConfig = [], {data = [], sorted = {}} = {}, isSortLocally = true) {
     super();
 
     this.#headerConfig = headerConfig;
     this.#data = data;
     this.#sorted = sorted;
+    this.isSortLocally = isSortLocally;
 
     this.render();
     this.#bodyElement = this.element.querySelector('[data-element="body"]');
