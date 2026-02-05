@@ -56,7 +56,7 @@ export default class SortableTable extends Component {
   }
 
   sort(fieldValue, orderValue) {
-    const headerCell = document.querySelector(`.sortable-table__cell[data-id="${fieldValue}"]`);
+    const headerCell = this.element.querySelector(`.sortable-table__cell[data-id="${fieldValue}"]`);
     headerCell.dataset.order = orderValue;
     headerCell.append(this.#arrow);
     const sortType = this.#headerConfig.find(Item => Item.id === fieldValue)?.sortType;
