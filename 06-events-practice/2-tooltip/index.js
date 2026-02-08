@@ -2,13 +2,19 @@ import { Component } from "../../components/component.js";
 
 class Tooltip extends Component {
   #tooltipText = '';
+  static #instance = null;
 
   constructor() {
     super();
+    
+    if (Tooltip.#instance) {
+      return Tooltip.#instance;
+    }
+    
+    Tooltip.#instance = this;
   }
 
-
-  initialize () {
+  initialize() {
     document.addEventListener('pointerover', this.pointerOverHandler);
     document.addEventListener('pointerout', this.pointerOutHandler);
   }
