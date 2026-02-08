@@ -8,7 +8,7 @@ export class Component {
 
     set html(content) {
       const elem = document.createElement(this.#tagname);
-      elem.innerHTML = content.trim();
+      elem.innerHTML = content?.trim();
       this.#element = elem.firstElementChild;
     }
 
