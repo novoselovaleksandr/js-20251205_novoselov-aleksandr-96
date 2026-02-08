@@ -1,9 +1,16 @@
 import { Component } from "../../components/component.js";
 
 class Tooltip extends Component {
+  static #onlyInstance = null;
+
   constructor() {
     super();
-    this.#render();
+
+    if (!Tooltip.#onlyInstance) {
+      Tooltip.#onlyInstance = this;
+    } else {
+      return Tooltip.#onlyInstance;
+    }
   }
 
   initialize () {
