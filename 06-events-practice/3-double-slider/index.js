@@ -9,6 +9,8 @@ export default class DoubleSlider extends Component {
     #from = 0;
     #to = 100;
     #formatValue = value => value;
+    #onLeftThumbPointerMove = event => this.#onThumbPointerMove(event, 'left');
+    #onRightThumbPointerMove = event => this.#onThumbPointerMove(event, 'right');
     
     constructor({
       min = 0,
@@ -88,6 +90,7 @@ export default class DoubleSlider extends Component {
       thumb.style.left = `${leftPercents}%`;
 
       const approximateValue = leftRelative * (this.max - this.min) + this.min;
+      // this.#progress.style.width = `${leftPercents}%`;
 
       if (direction === 'left') {
         this.#leftThumbValueChangeHandler(Math.round(approximateValue));
@@ -95,43 +98,6 @@ export default class DoubleSlider extends Component {
         this.#rightThumbValueChangeHandler(Math.round(approximateValue));
       }
     };
-
-    #onLeftThumbPointerMove = event => {
-      if (!this.element) {return;}
-
-      const rect = this.element.getBoundingClientRect();
-      if (rect.width === 0) { return; }
-  
-      const newLeft = event.clientX - rect.left;
-      let leftRelative = newLeft / rect.width;
-
-      leftRelative = Math.max(0, Math.min(1, leftRelative));
-
-      let leftPercents = leftRelative * 100;
-      this.#leftThumb.style.left = `${leftPercents}%`;
-
-      const approximateValue = leftRelative * (this.max - this.min) + this.min;
-      this.#leftThumbValueChangeHandler(Math.round(approximateValue));
-      // this.#progress.style.width = `${leftPercents}%`;
-    }
-
-    #onRightThumbPointerMove = event => {
-      if (!this.element) {return;}
-
-      const rect = this.element.getBoundingClientRect();
-      if (rect.width === 0) { return; }
-
-      const newLeft = event.clientX - rect.left;
-      let leftRelative = newLeft / rect.width;
-      leftRelative = Math.max(0, Math.min(1, leftRelative));
-
-      let leftPercents = leftRelative * 100;
-      this.#rightThumb.style.left = `${leftPercents}%`;
-
-      const approximateValue = leftRelative * (this.max - this.min) + this.min;
-      this.#rightThumbValueChangeHandler(Math.round(approximateValue));
-      // this.#progress.style.width = `${leftPercents}%`;
-    }
 
     #onLeftThumbPointerUp = event => {
       document.removeEventListener('pointermove', this.#onLeftThumbPointerMove);
