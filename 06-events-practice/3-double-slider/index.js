@@ -2,6 +2,7 @@ import { Component } from "../../components/component.js";
 export default class DoubleSlider extends Component {
     #leftThumb = null;
     #rightThumb = null;
+    #progress = null
     #fromValueElement = null;
     #toValueElement = null;
     min = 0;
@@ -9,8 +10,6 @@ export default class DoubleSlider extends Component {
     #from = 0;
     #to = 100;
     #formatValue = value => value;
-    #onLeftThumbPointerMove = event => this.#onThumbPointerMove(event, 'left');
-    #onRightThumbPointerMove = event => this.#onThumbPointerMove(event, 'right');
     
     constructor({
       min = 0,
@@ -53,6 +52,7 @@ export default class DoubleSlider extends Component {
     #initListeners() {
       this.#leftThumb = this.element.querySelector('.range-slider__thumb-left');
       this.#rightThumb = this.element.querySelector('.range-slider__thumb-right');
+      this.#progress = this.element.querySelector('.range-slider__progress');
 
       this.#leftThumb.ondragstart = () => false;
       this.#rightThumb.ondragstart = () => false;
@@ -62,16 +62,35 @@ export default class DoubleSlider extends Component {
     }
 
     #onLeftThumbPointerDown = event => {
-      document.addEventListener('pointermove', this.#onLeftThumbPointerMove);
-      document.addEventListener('pointerup', this.#onLeftThumbPointerUp);
+      event.preventDefault(); // Предотвращаем выделение
+      
+      const moveHandler = event => this.#onThumbPointerMove(event, 'left');
+      const upHandler = () => {
+        document.removeEventListener('pointermove', moveHandler);
+        document.removeEventListener('pointerup', upHandler);
+        this.#updateProgress();
+      };
+      
+      document.addEventListener('pointermove', moveHandler);
+      document.addEventListener('pointerup', upHandler);
     }
 
     #onRightThumbPointerDown = event => {
-      document.addEventListener('pointermove', this.#onRightThumbPointerMove);
-      document.addEventListener('pointerup', this.#onRightThumbPointerUp);
+      event.preventDefault(); // Предотвращаем выделение
+      
+      const moveHandler = event => this.#onThumbPointerMove(event, 'right');
+      const upHandler = () => {
+        document.removeEventListener('pointermove', moveHandler);
+        document.removeEventListener('pointerup', upHandler);
+        this.#updateProgress();
+      };
+      
+      document.addEventListener('pointermove', moveHandler);
+      document.addEventListener('pointerup', upHandler);
     }
 
     #onThumbPointerMove = (event, direction) => {
+      event.preventDefault(); // Предотвращаем выделение
       if (!this.element) { return; }
 
       const thumb = direction === 'left'
@@ -99,10 +118,6 @@ export default class DoubleSlider extends Component {
       }
     };
 
-    #onLeftThumbPointerUp = event => {
-      document.removeEventListener('pointermove', this.#onLeftThumbPointerMove);
-      document.removeEventListener('pointerup', this.#onLeftThumbPointerUp);
-    }
 
     #leftThumbValueChangeHandler = value => {
       this.#from = value;
@@ -114,8 +129,13 @@ export default class DoubleSlider extends Component {
       this.#toValueElement.innerHTML = this.#formatValue(this.#to);
     }
 
-    #onRightThumbPointerUp = event => {
-      document.removeEventListener('pointermove', this.#onRightThumbPointerMove);
-      document.removeEventListener('pointerup', this.#onRightThumbPointerUp);
+    #updateProgress() {
+      if (!this.#progress || !this.#leftThumb || !this.#rightThumb) {return;}
+      
+      const leftPercent = parseFloat(this.#leftThumb.style.left) || 0;
+      const rightPercent = parseFloat(this.#rightThumb.style.left) || 100;
+      
+      this.#progress.style.left = `${leftPercent}%`;
+      this.#progress.style.width = `${rightPercent - leftPercent}%`;
     }
 }
