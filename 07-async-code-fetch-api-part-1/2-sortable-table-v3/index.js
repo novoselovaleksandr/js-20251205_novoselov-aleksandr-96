@@ -12,43 +12,86 @@ export default class SortableTable extends Component {
   #arrow = null;
   #bodyElement = null;
   subElements = {}
+  #sortableTable = null
   #header = null;
+  #isLoading = false;
+  #url = null;
+  #start = 0;
+  #end = 20;
 
-  constructor(headerConfig = [], {data = [], sorted = {}} = {}, isSortLocally = true) {
+  constructor(headerConfig = [], { url = null, data = [], sorted = {} } = {}, isSortLocally = true, start = 0, end = 20) {
     super();
 
     this.#headerConfig = headerConfig;
     this.#data = data;
     this.#sorted = sorted;
     this.#isSortLocally = isSortLocally;
+    this.#url = url;
+    this.#start = start;
 
     this.render();
     this.#bodyElement = this.element.querySelector('[data-element="body"]');
     this.#header = this.element.querySelector('[data-element="header"]');
+    this.#sortableTable = this.element.querySelector('.sortable-table');
     this.#createArrow();
     this.#initSubElements();
+
+    if (this.#url) {
+      this.loadData();
+    }
 
     this.sort();
 
     this.#initListeners();
   }
 
-  sortOnClient (id, order) {
-
+  async loadData() {
+    if (this.#isLoading) {return;}
+  
+    this.#isLoading = true;
+    this.#toggleLoader();
+  
+    try {
+      const params = new URLSearchParams({
+        _sort: this.#sorted.id,
+        _order: this.#sorted.order,
+        _start: this.#start,
+        _end: this.#end
+      });
+  
+      const data = await fetchJson(`${BACKEND_URL}/${this.#url}?${params}`);
+  
+      this.#data = data;
+      this.render();
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      this.#isLoading = false;
+      this.#toggleLoader();
+    }
   }
 
-  sortOnServer (id, order) {
-  }
+   #toggleLoader = () => {
+     this.#sortableTable.classList.toggle('.sortable-table_loading');
+
+   }
+
+   sortOnClient (id, order) {
+
+   }
+
+   sortOnServer (id, order) {
+   }
 
   #headerColumns() {
-    return this.#headerConfig?.length === 0 ? `` : `
+     return this.#headerConfig?.length === 0 ? `` : `
       ${this.#headerConfig.map(column => `
         <div class="sortable-table__cell" data-id="${column.id}" data-sortable="${column.sortable}" data-order="asc">
           <span>${column.title}</span>
         </div>
       `).join('\n')}
     `; 
-  }
+   }
 
   #bodyColumns() {
     return this.#headerConfig?.length === 0 || this.#data?.length === 0 ? `` : `
@@ -153,6 +196,13 @@ export default class SortableTable extends Component {
           </div>
           <div data-element="body" class="sortable-table__body">
               ${this.#bodyColumns()}
+          </div>
+          <div data-element="loading" class="loading-line sortable-table__loading-line"></div>
+          <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
+            <div>
+              <p>No products satisfies your filter criteria</p>
+              <button type="button" class="button-primary-outline">Reset all filters</button>
+            </div>
           </div>
         </div>
       </div>
