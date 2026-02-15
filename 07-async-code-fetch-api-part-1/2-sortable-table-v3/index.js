@@ -72,7 +72,7 @@ export default class SortableTable extends Component {
   }
 
    #toggleLoader = () => {
-     this.#sortableTable.classList.toggle('.sortable-table_loading');
+     this.#sortableTable.classList.toggle('sortable-table_loading');
    }
 
   #headerColumns() {
