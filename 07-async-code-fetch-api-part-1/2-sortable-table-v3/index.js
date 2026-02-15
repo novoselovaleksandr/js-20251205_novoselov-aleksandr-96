@@ -37,15 +37,17 @@ export default class SortableTable extends Component {
     this.#initSubElements();
 
     if (this.#url) {
-      this.loadData();
+      this.loadAndRenderData();
     }
 
-    this.sort();
+    if (this.#isSortLocally) {
+      this.sort();
+    }
 
     this.#initListeners();
   }
 
-  async loadData() {
+  async loadAndRenderData() {
     if (this.#isLoading) {return;}
   
     this.#isLoading = true;
@@ -63,6 +65,7 @@ export default class SortableTable extends Component {
   
       this.#data = data;
       this.render();
+      this.arrowHandler(this.#sorted.id, this.#sorted.order);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -152,10 +155,8 @@ export default class SortableTable extends Component {
     }
   }
 
-  sortHandler(fieldValue, orderValue, userSort = null) {
-    const headerCell = this.element.querySelector(`.sortable-table__cell[data-id="${fieldValue}"]`);
-    headerCell.dataset.order = orderValue;
-    headerCell.append(this.#arrow);
+  sortHandler = (fieldValue, orderValue, userSort = null) => {
+    this.arrowHandler(fieldValue, orderValue);
     const sortType = this.#headerConfig.find(Item => Item.id === fieldValue)?.sortType;
 
     if (userSort) {
@@ -166,6 +167,12 @@ export default class SortableTable extends Component {
 
     this.#bodyElement.innerHTML = this.#bodyColumns();
     
+  }
+
+  arrowHandler = (fieldValue, orderValue) => {
+    const headerCell = this.element.querySelector(`.sortable-table__cell[data-id="${fieldValue}"]`);
+    headerCell.dataset.order = orderValue;
+    headerCell.append(this.#arrow);
   }
 
   #arrowTemplate() {
