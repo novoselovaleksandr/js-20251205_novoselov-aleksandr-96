@@ -38,7 +38,7 @@ export default class SortableTable extends Component {
     this.#initListeners();
 
     if (this.#url) {
-      this.loadAndRenderData();
+      this.loadData();
     }
 
     if (this.#isSortLocally) {
@@ -47,7 +47,7 @@ export default class SortableTable extends Component {
 
   }
 
-  async loadAndRenderData() {
+  async loadData() {
     if (this.#isLoading) {return;}
   
     this.#isLoading = true;
@@ -145,7 +145,7 @@ export default class SortableTable extends Component {
     };
 
     this.#sorted = sorted;
-    this.loadAndRenderData();
+    this.loadData();
   }
 
   headerClickHandler = (event) => {
