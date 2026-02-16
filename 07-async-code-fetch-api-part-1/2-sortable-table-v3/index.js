@@ -19,7 +19,7 @@ export default class SortableTable extends Component {
   #start = 0;
   #end = 20;
 
-  constructor(headerConfig = [], { url = null, data = [], sorted = { id: 'title', order: 'asc' } } = {}, isSortLocally = false, start = 0, end = 20) {
+  constructor(headerConfig = [], { url = BACKEND_URL, data = [], sorted = { id: 'title', order: 'asc' } } = {}, isSortLocally = false, start = 0, end = 20) {
     super();
 
     this.#headerConfig = headerConfig;
