@@ -55,19 +55,19 @@ export default class ColumnChart extends Component {
         url.searchParams.set('to', to.toISOString());
       }
 
-      this.isDataLoading = true;
+      this.#isDataLoading = true;
       this.render();
       const data = await fetchJson(url);
       const values = Object.values(data);
       this.#data = values;
-      this.isDataLoading = false;
+      this.#isDataLoading = false;
       this.render();
 
       return data;
     } catch (err) {
       console.error('Failed to load data:', err);
       this.#data = [];
-      this.isDataLoading = false;
+      this.#isDataLoading = false;
       this.render();
 
       return {};
@@ -89,7 +89,7 @@ export default class ColumnChart extends Component {
     const maxValue = this.isEmpty() ? 0 : Math.max(...Object.values(this.#data));
     const scale = this.chartHeight / maxValue;
 
-    return `<div class="column-chart ${this.isEmpty() || this.isDataLoading ? 'column-chart_loading' : '' }" style="--chart-height: 50">
+    return `<div class="column-chart ${this.isEmpty() || this.#isDataLoading ? 'column-chart_loading' : '' }" style="--chart-height: 50">
               <div class="column-chart__title">
                 Total ${this.#label}
                 ${this.isEmpty() ? `<a class="column-chart__link" href="${this.#link}">View all</a>` : ''}
