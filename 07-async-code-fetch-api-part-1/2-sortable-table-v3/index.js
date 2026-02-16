@@ -19,7 +19,7 @@ export default class SortableTable extends Component {
   #start = 0;
   #end = 20;
 
-  constructor(headerConfig = [], { url = null, data = [], sorted = { id: 'title', order: 'asc' } } = {}, isSortLocally = true, start = 0, end = 20) {
+  constructor(headerConfig = [], { url = null, data = [], sorted = { id: 'title', order: 'asc' } } = {}, isSortLocally = false, start = 0, end = 20) {
     super();
 
     this.#headerConfig = headerConfig;
@@ -139,6 +139,13 @@ export default class SortableTable extends Component {
   }
 
   sortOnServer (id, order) {
+    const sorted = {
+      id,
+      order,
+    };
+
+    this.#sorted = sorted;
+    this.loadAndRenderData();
   }
 
   headerClickHandler = (event) => {
