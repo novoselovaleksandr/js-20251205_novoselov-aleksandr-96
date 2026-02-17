@@ -84,13 +84,13 @@ export default class SortableTable extends Component {
     if (this.#headerConfig?.length === 0) { return ''; }
     
     return this.#headerConfig.map(column => {
-      const orderId = column.id === this.#sorted.id ? this.#sorted.order : '';
+      const order = column.id === this.#sorted.id ? this.#sorted.order : 'asc';
       
       return `
         <div class="sortable-table__cell sortable-table__header-cell" 
              data-id="${column.id}" 
              data-sortable="${column.sortable}"
-             data-order="${orderId}">
+             data-order="${order}">
           ${column.title}
         </div>
       `;
