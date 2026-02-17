@@ -47,7 +47,6 @@ export default class SortableTable extends Component {
     this.#initListeners();
 
     this.arrowHandler(this.#sorted.id, this.#sorted.order);
-    this.#updateEmptyState();
 
     if (this.#url && !this.#isSortLocally) {
       this.#loadPromise = this.loadData().catch(() => {});
@@ -59,12 +58,10 @@ export default class SortableTable extends Component {
   }
 
   async render() {
-    // Если есть промис загрузки из конструктора, ждем его
     if (this.#loadPromise) {
       await this.#loadPromise;
     }
     
-    // Загружаем данные, если их нет
     if (this.#url && !this.#isSortLocally && this.#data.length === 0) {
       await this.loadData();
     }
@@ -106,7 +103,6 @@ export default class SortableTable extends Component {
       }
       
       this.#updateBodyColumns();
-      this.#updateEmptyState();
       this.arrowHandler(this.#sorted.id, this.#sorted.order);
       
       return this.#data;
@@ -115,6 +111,7 @@ export default class SortableTable extends Component {
     } finally {
       this.#isLoading = false;
       this.#toggleLoader();
+      this.#updateEmptyState();
     }
   }
 
@@ -127,7 +124,7 @@ export default class SortableTable extends Component {
   #updateEmptyState = () => {
     if (!this.#sortableTable) {return;}
 
-    if (this.#data.length === 0) {
+    if (!this.#isLoading && this.#data.length === 0) {
       this.#sortableTable.classList.add('sortable-table_empty');
     } else {
       this.#sortableTable.classList.remove('sortable-table_empty');
