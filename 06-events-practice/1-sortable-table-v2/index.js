@@ -84,7 +84,7 @@ export default class SortableTable extends Component {
   }
 
   #sortOnServer() {
-
+    throw new Error('Not implemented');
   }
 
   headerClickHandler = (event) => {
