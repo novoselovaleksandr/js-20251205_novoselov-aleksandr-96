@@ -75,7 +75,7 @@ export default class ColumnChart extends Component {
   }
 
   getTotalValue() {
-    return this.#formatHeading(this.#value);
+    return this.#formatHeading(this.#data.reduce((sum, val) => sum + val, 0));
   }
 
   getColumns(maxValue, scale) {
