@@ -86,7 +86,7 @@ export default class ColumnChart extends Component {
   }
 
   template() {
-    const maxValue = this.isEmpty() ? 0 : Math.max(...Object.values(this.#data));
+    const maxValue = this.isEmpty() ? 0 : Math.max(...this.#data);
     const scale = this.chartHeight / maxValue;
 
     return `<div class="column-chart ${this.isEmpty() || this.#isDataLoading ? 'column-chart_loading' : '' }" style="--chart-height: 50">
