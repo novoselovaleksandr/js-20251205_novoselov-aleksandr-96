@@ -54,6 +54,9 @@ export default class DoubleSlider extends Component {
     this.html = this.#template();
   }
 
+  #leftPointerDownHandler = e => this.#onPointerDown(e, 'left')
+  #rightPointerDownHandler = e => this.#onPointerDown(e, 'right')
+
   #initListeners() {
     this.#leftThumb = this.element.querySelector('.range-slider__thumb-left');
     this.#rightThumb = this.element.querySelector('.range-slider__thumb-right');
@@ -62,8 +65,8 @@ export default class DoubleSlider extends Component {
     this.#leftThumb.ondragstart = () => false;
     this.#rightThumb.ondragstart = () => false;
 
-    this.#leftThumb.addEventListener('pointerdown', e => this.#onPointerDown(e, 'left'));
-    this.#rightThumb.addEventListener('pointerdown', e => this.#onPointerDown(e, 'right'));
+    this.#leftThumb.addEventListener('pointerdown', this.#leftPointerDownHandler);
+    this.#rightThumb.addEventListener('pointerdown', this.#rightPointerDownHandler);
   }
 
   #onPointerDown = (event, direction) => {
@@ -163,6 +166,11 @@ export default class DoubleSlider extends Component {
   }
 
   destroy() {
+    this.#leftThumb.removeEventListener('pointerdown', this.#leftPointerDownHandler);
+    this.#rightThumb.removeEventListener('pointerdown', this.#rightPointerDownHandler);
+    this.#leftThumb.ondragstart = null;
+    this.#rightThumb.ondragstart = null;
+
     this.element.remove();
   }
 }
