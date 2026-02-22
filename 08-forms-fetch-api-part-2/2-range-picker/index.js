@@ -133,9 +133,7 @@ export default class RangePicker extends Component {
       this.from = date;
     } else if (this.from && !this.to) {
       // Есть только from
-      if (date.getTime() === this.from.getTime()) {
-        this.from = null;
-      } else if (date < this.from) {
+      if (date < this.from) {
         // Дата раньше from — меняем их местами
         this.to = this.from;
         this.from = date;
