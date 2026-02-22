@@ -9,6 +9,8 @@ export default class ProductForm extends Component {
   productId = null;
   #subcategoriesSelect = null;
   #imagesList = null;
+  #saveButton = null;
+  #boundSave = null;
   subElements = {};
   #defaultFields = [
     'title',
@@ -26,9 +28,27 @@ export default class ProductForm extends Component {
     this.productId = productId ?? this.productId;
 
     this.html = this.template();
+
     this.#subcategoriesSelect = this.element.querySelector('#subcategory');
     this.#initSubElements();
     this.#imagesList = this.subElements.imageListContainer?.querySelector('.sortable-list');
+
+    this.#saveButton = this.element.querySelector('[name="save"]');
+    this.#boundSave = this.save.bind(this);
+    this.#initListeners();
+  }
+
+  #initListeners() {
+    this.#saveButton.addEventListener('click', this.#boundSave);
+  }
+
+  #removeListeners() {
+    this.#saveButton.removeEventListener('click', this.#boundSave);
+  }
+
+  destroy() {
+    super.destroy();
+    this.#removeListeners();
   }
 
   template() {
@@ -110,14 +130,14 @@ export default class ProductForm extends Component {
   #renderProductData(product) {
     for (const field of this.#defaultFields) {
       const el = this.element.querySelector(`#${field}`);
-      const value = product[field];
+      const value = product?.[field];
       if (el && value !== undefined) {
         el.value = value;
       }
     }
     
     // Рендерим изображения
-    if (product.images?.length && this.#imagesList) {
+    if (product?.images?.length && this.#imagesList) {
       this.#imagesList.innerHTML = '';
       for (const image of product.images) {
         const li = document.createElement('li');
@@ -173,7 +193,11 @@ export default class ProductForm extends Component {
     return data;
   }
 
-  async save() {
+  async save(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
     const formData = this.#getFormData();
     
     const url = this.productId 
