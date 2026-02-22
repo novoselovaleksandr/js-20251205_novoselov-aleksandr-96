@@ -16,7 +16,7 @@ export default class RangePicker extends Component {
     super();
     this.from = from ?? this.from;
     this.to = to ?? this.to;
-    
+
     // Инициализируем текущий месяц для отображения
     if (this.from) {
       this.currentMonth = this.from.getMonth();
@@ -31,7 +31,7 @@ export default class RangePicker extends Component {
 
     this.#rangepickerInput = this.element.querySelector('.rangepicker__input');
     this.#rangepickerSelector = this.element.querySelector('.rangepicker__selector');
-    
+
     this.#boundRangepickerClickHandler = this.rangepickerClickHandler.bind(this);
     this.#boundSelectorClickHandler = this.selectorClickHandler.bind(this);
     this.#boundDocumentClickHandler = this.documentClickHandler.bind(this);
@@ -65,7 +65,7 @@ export default class RangePicker extends Component {
   rangepickerClickHandler(event) {
     event.stopPropagation();
     this.isOpen = !this.isOpen;
-    
+
     if (this.isOpen) {
       this.element.classList.add('rangepicker_open');
       this.renderSelector();
@@ -102,10 +102,22 @@ export default class RangePicker extends Component {
       return;
     }
 
-    // Клик по дате
+    // Клик по дате или пустой ячейке
     const cell = target.closest('.rangepicker__cell');
-    if (cell && !cell.classList.contains('rangepicker__cell--empty')) {
+    if (cell) {
       event.stopPropagation();
+      
+      // Если кликнули по пустой ячейке — выбираем первый день месяца
+      if (cell.classList.contains('rangepicker__cell--empty')) {
+        const calendar = cell.closest('.rangepicker__calendar');
+        if (calendar) {
+          const month = parseInt(calendar.dataset.month, 10);
+          const year = parseInt(calendar.dataset.year, 10);
+          this.selectDate(new Date(year, month, 1));
+        }
+        return;
+      }
+      
       const day = parseInt(cell.textContent.trim(), 10);
       const calendar = cell.closest('.rangepicker__calendar');
       const month = parseInt(calendar.dataset.month, 10);
@@ -120,7 +132,7 @@ export default class RangePicker extends Component {
       // Нет выбора — устанавливаем from
       this.from = date;
     } else if (this.from && !this.to) {
-    // Есть только from
+      // Есть только from
       if (date.getTime() === this.from.getTime()) {
         this.from = null;
       } else if (date < this.from) {
@@ -132,7 +144,7 @@ export default class RangePicker extends Component {
         this.to = date;
       }
     } else {
-    // Есть полный диапазон — начинаем новый выбор
+      // Есть полный диапазон — начинаем новый выбор
       this.from = date;
       this.to = null;
     }
@@ -160,11 +172,11 @@ export default class RangePicker extends Component {
     const cells = this.element.querySelectorAll('.rangepicker__cell');
     cells.forEach(cell => {
       if (cell.classList.contains('rangepicker__cell--empty')) {return;}
-      
+
       const day = parseInt(cell.textContent.trim(), 10);
       const calendar = cell.closest('.rangepicker__calendar');
       if (!calendar) {return;}
-      
+
       const month = parseInt(calendar.dataset.month, 10);
       const year = parseInt(calendar.dataset.year, 10);
       const cellDate = new Date(year, month, day);
@@ -172,11 +184,11 @@ export default class RangePicker extends Component {
       if (this.from && this.isSameDate(cellDate, this.from)) {
         cell.classList.add('rangepicker__selected-from');
       }
-      
+
       if (this.to && this.isSameDate(cellDate, this.to)) {
         cell.classList.add('rangepicker__selected-to');
       }
-      
+
       if (this.from && this.to && cellDate > this.from && cellDate < this.to) {
         cell.classList.add('rangepicker__selected-between');
       }
@@ -269,45 +281,45 @@ export default class RangePicker extends Component {
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
-    
+
     // 0 - Вс, 1 - Пн, ..., 6 - Сб. Нам нужно Пн=1 ... Вс=7
     let startDay = firstDayOfMonth.getDay();
     startDay = startDay === 0 ? 7 : startDay;
-    
+
     const cells = [];
-    
+
     // Пустые ячейки
     for (let i = 1; i < startDay; i++) {
       cells.push(`<div class="rangepicker__cell rangepicker__cell--empty"></div>`);
     }
-    
+
     // Дни
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month, day);
       const classes = ['rangepicker__cell'];
-      
+
       if (this.from && this.isSameDate(currentDate, this.from)) {
         classes.push('rangepicker__selected-from');
       }
-      
+
       if (this.to && this.isSameDate(currentDate, this.to)) {
         classes.push('rangepicker__selected-to');
       }
-      
+
       if (this.from && this.to && currentDate > this.from && currentDate < this.to) {
         classes.push('rangepicker__selected-between');
       }
-      
+
       cells.push(`<div class="${classes.join(' ')}">${day}</div>`);
     }
-    
+
     return cells.join('');
   }
 
   isSameDate(date1, date2) {
     return date1.getDate() === date2.getDate() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getFullYear() === date2.getFullYear();
+      date1.getMonth() === date2.getMonth() &&
+      date1.getFullYear() === date2.getFullYear();
   }
 
   getMonthName(month) {
