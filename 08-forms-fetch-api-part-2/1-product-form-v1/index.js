@@ -261,7 +261,7 @@ export default class ProductForm extends Component {
       ? `${BACKEND_URL}/api/rest/products/${this.productId}`
       : `${BACKEND_URL}/api/rest/products`;
     
-    const method = this.productId ? 'PUT' : 'POST';
+    const method = this.productId ? 'PATCH' : 'POST';
     
     const result = await fetchJson(url, {
       method,
@@ -280,7 +280,7 @@ export default class ProductForm extends Component {
   }
 
   async render() {
-    const categoriesPromise = fetchJson(`${BACKEND_URL}/api/rest/categories?_refs=subcategory`);
+    const categoriesPromise = fetchJson(`${BACKEND_URL}/api/rest/categories?_sort=weight&_refs=subcategory`);
     const productPromise = this.productId 
       ? fetchJson(`${BACKEND_URL}/api/rest/products/?id=${this.productId}`).then(data => data[0])
       : Promise.resolve(null);
