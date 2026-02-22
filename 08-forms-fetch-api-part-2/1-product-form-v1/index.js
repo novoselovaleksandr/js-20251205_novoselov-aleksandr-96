@@ -269,7 +269,7 @@ export default class ProductForm extends Component {
 
     const url = `${BACKEND_URL}/api/rest/products`;
     
-    const method = this.productId ? 'PATCH' : 'POST';
+    const method = this.productId ? 'PATCH' : 'PUT';
     
     const result = await fetchJson(url, {
       method,
