@@ -10,7 +10,9 @@ export default class ProductForm extends Component {
   #subcategoriesSelect = null;
   #imagesList = null;
   #saveButton = null;
+  #uploadButton = null;
   #boundSave = null;
+  #boundUploadImage = null;
   subElements = {};
   #defaultFields = [
     'title',
@@ -22,7 +24,7 @@ export default class ProductForm extends Component {
     'discount'
   ];
 
-  constructor (productId) {
+  constructor(productId) {
     super();
 
     this.productId = productId ?? this.productId;
@@ -34,21 +36,37 @@ export default class ProductForm extends Component {
     this.#imagesList = this.subElements.imageListContainer?.querySelector('.sortable-list');
 
     this.#saveButton = this.element.querySelector('[name="save"]');
+    this.#uploadButton = this.element.querySelector('[name="uploadImage"]');
+
     this.#boundSave = this.save.bind(this);
+    this.#boundUploadImage = this.#uploadImage.bind(this);
+
     this.#initListeners();
   }
 
   #initListeners() {
     this.#saveButton.addEventListener('click', this.#boundSave);
+    this.#uploadButton.addEventListener('click', this.#boundUploadImage);
+    
+    // Делегирование для кнопок удаления изображений
+    this.subElements.imageListContainer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-delete-handle]')) {
+        const item = event.target.closest('.sortable-list__item');
+        if (item) {
+          item.remove();
+        }
+      }
+    });
   }
 
   #removeListeners() {
     this.#saveButton.removeEventListener('click', this.#boundSave);
+    this.#uploadButton.removeEventListener('click', this.#boundUploadImage);
   }
 
   destroy() {
-    super.destroy();
     this.#removeListeners();
+    super.destroy();
   }
 
   template() {
@@ -140,27 +158,66 @@ export default class ProductForm extends Component {
     if (product?.images?.length && this.#imagesList) {
       this.#imagesList.innerHTML = '';
       for (const image of product.images) {
-        const li = document.createElement('li');
-        li.className = 'products-edit__imagelist-item sortable-list__item';
-        const url = image.url;
-        const source = image.source;
-
-        li.innerHTML = `
-            <input type="hidden" name="url" value="${escapeHtml(url)}">
-            <input type="hidden" name="source" value="${escapeHtml(source)}">
-            <span>
-              <img src="icon-grab.svg" data-grab-handle alt="grab">
-              <img class="sortable-table__cell-img" alt="${escapeHtml(source)}" src="${escapeHtml(url)}">
-              <span>${escapeHtml(source)}</span>
-            </span>
-            <button type="button">
-              <img src="icon-trash.svg" data-delete-handle alt="delete">
-            </button>
-          `;
-
-        this.#imagesList.appendChild(li);
+        this.#addImageToList(image.url, image.source);
       }
     }
+  }
+
+  #addImageToList(url, source) {
+    const li = document.createElement('li');
+    li.className = 'products-edit__imagelist-item sortable-list__item';
+
+    li.innerHTML = `
+      <input type="hidden" name="url" value="${escapeHtml(url)}">
+      <input type="hidden" name="source" value="${escapeHtml(source)}">
+      <span>
+        <img src="icon-grab.svg" data-grab-handle alt="grab">
+        <img class="sortable-table__cell-img" alt="${escapeHtml(source)}" src="${escapeHtml(url)}">
+        <span>${escapeHtml(source)}</span>
+      </span>
+      <button type="button">
+        <img src="icon-trash.svg" data-delete-handle alt="delete">
+      </button>
+    `;
+
+    this.#imagesList.appendChild(li);
+  }
+
+  async #uploadImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) {return;}
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          this.#addImageToList(data.data.link, file.name);
+        } else {
+          throw new Error('Failed to upload image');
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+        alert('Ошибка загрузки изображения');
+      }
+    };
+
+    input.click();
   }
 
   #getFormData() {

@@ -290,7 +290,7 @@ export default class SortableTable extends Component {
   }
 
   destroy() {
-    super.destroy();
     this.#removeListeners();
+    super.destroy();
   }
 }
