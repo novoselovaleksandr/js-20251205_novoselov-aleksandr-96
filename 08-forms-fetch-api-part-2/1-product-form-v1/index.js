@@ -115,7 +115,7 @@ export default class ProductForm extends Component {
           </div>
           <div class="form-buttons">
             <button type="submit" name="save" class="button-primary-outline">
-              Сохранить товар
+              ${this.productId ? "Сохранить товар" : "Добавить товар"}
             </button>
           </div>
         </form>
