@@ -115,7 +115,7 @@ export default class ProductForm extends Component {
           </div>
           <div class="form-buttons">
             <button type="submit" name="save" class="button-primary-outline">
-              ${this.productId ? "Сохранить товар" : "Добавить товар"}
+              ${this.productId ? 'Сохранить товар' : 'Добавить товар'}
             </button>
           </div>
         </form>
@@ -192,6 +192,8 @@ export default class ProductForm extends Component {
       const file = input.files[0];
       if (!file) {return;}
 
+      this.#uploadButton.classList.add('is-loading');
+
       const formData = new FormData();
       formData.append('image', file);
 
@@ -214,6 +216,8 @@ export default class ProductForm extends Component {
       } catch (error) {
         console.error('Image upload error:', error);
         alert('Ошибка загрузки изображения');
+      } finally {
+        this.#uploadButton.classList.remove('is-loading');
       }
     };
 
