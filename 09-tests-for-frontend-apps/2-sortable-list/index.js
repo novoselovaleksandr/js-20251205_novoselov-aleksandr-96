@@ -5,6 +5,7 @@ export default class SortableList extends Component {
   #draggingElement = null;
   #placeholder = null;
   #dragOffsetY = 0;
+  #boundOnPointerDown = null;
   #onPointerMove = null;
   #onPointerUp = null;
 
@@ -12,6 +13,7 @@ export default class SortableList extends Component {
     super();
     this.#items = items;
     this.render();
+    this.#boundOnPointerDown = this.#onPointerDown.bind(this);
     this.#initListeners();
   }
 
@@ -27,29 +29,40 @@ export default class SortableList extends Component {
     }).join('');
   }
 
+  destroy() {
+    this.#removeListeners();
+    super.destroy();
+  }
+
 
   #initListeners() {
-    this.element.addEventListener('pointerdown', (e) => {
-      const deleteHandle = e.target.closest('[data-delete-handle]');
-      const grabHandle = e.target.closest('[data-grab-handle]');
+    this.element.addEventListener('pointerdown', this.#boundOnPointerDown);
+  }
 
-      if (deleteHandle) {
-        e.preventDefault();
-        const item = deleteHandle.closest('.sortable-list__item');
-        if (item) {
-          item.remove();
-        }
-        return;
-      }
+  #removeListeners() {
+    this.element.removeEventListener('pointerdown', this.#boundOnPointerDown);
+  }
 
-      if (grabHandle) {
-        e.preventDefault();
-        const item = grabHandle.closest('.sortable-list__item');
-        if (item) {
-          this.#onDragStart(e, item);
-        }
+  #onPointerDown(event) {
+    const deleteHandle = event.target.closest('[data-delete-handle]');
+    const grabHandle = event.target.closest('[data-grab-handle]');
+
+    if (deleteHandle) {
+      event.preventDefault();
+      const item = deleteHandle.closest('.sortable-list__item');
+      if (item) {
+        item.remove();
       }
-    });
+      return;
+    }
+
+    if (grabHandle) {
+      event.preventDefault();
+      const item = grabHandle.closest('.sortable-list__item');
+      if (item) {
+        this.#onDragStart(event, item);
+      }
+    }
   }
 
   #onDragStart(e, item) {
@@ -116,15 +129,5 @@ export default class SortableList extends Component {
 
     document.addEventListener('pointermove', this.#onPointerMove);
     document.addEventListener('pointerup', this.#onPointerUp);
-  }
-
-  destroy() {
-    if (this.#onPointerMove) {
-      document.removeEventListener('pointermove', this.#onPointerMove);
-    }
-    if (this.#onPointerUp) {
-      document.removeEventListener('pointerup', this.#onPointerUp);
-    }
-    super.destroy();
   }
 }
