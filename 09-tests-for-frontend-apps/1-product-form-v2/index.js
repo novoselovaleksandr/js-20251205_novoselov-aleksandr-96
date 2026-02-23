@@ -9,7 +9,7 @@ const BACKEND_URL = 'https://course-js.javascript.ru';
 export default class ProductForm extends Component {
   productId = null;
   #subcategoriesSelect = null;
-  #imagesList = null;
+  #sortableList = null;
   #saveButton = null;
   #uploadButton = null;
   #boundSave = null;
@@ -34,7 +34,6 @@ export default class ProductForm extends Component {
 
     this.#subcategoriesSelect = this.element.querySelector('#subcategory');
     this.#initSubElements();
-    this.#imagesList = this.subElements.imageListContainer?.querySelector('.sortable-list');
 
     this.#saveButton = this.element.querySelector('[name="save"]');
     this.#uploadButton = this.element.querySelector('[name="uploadImage"]');
@@ -48,21 +47,12 @@ export default class ProductForm extends Component {
   #initListeners() {
     this.#saveButton.addEventListener('click', this.#boundSave);
     this.#uploadButton.addEventListener('click', this.#boundUploadImage);
-
-    // Делегирование для кнопок удаления изображений
-    this.subElements.imageListContainer.addEventListener('click', (event) => {
-      if (event.target.closest('[data-delete-handle]')) {
-        const item = event.target.closest('.sortable-list__item');
-        if (item) {
-          item.remove();
-        }
-      }
-    });
   }
 
   #removeListeners() {
     this.#saveButton.removeEventListener('click', this.#boundSave);
     this.#uploadButton.removeEventListener('click', this.#boundUploadImage);
+    this.#sortableList.destroy();
   }
 
   destroy() {
@@ -84,9 +74,9 @@ export default class ProductForm extends Component {
             <label class="form-label">Описание</label>
             <textarea required class="form-control" name="description" id="description" data-element="productDescription" placeholder="Описание товара"></textarea>
           </div>
-          <div class="form-group form-group__wide" data-element="sortable-list-container">
+          <div class="form-group form-group__wide" data-element="imageListContainer">
             <label class="form-label">Фото</label>
-            <div data-element="imageListContainer"><ul class="sortable-list"></ul></div>
+            <div data-element="sortableListContainer"></div>
             <button type="button" name="uploadImage" class="button-primary-outline"><span>Загрузить</span></button>
           </div>
           <div class="form-group form-group__half_left">
@@ -155,16 +145,36 @@ export default class ProductForm extends Component {
       }
     }
     
-    // Рендерим изображения
-    if (product?.images?.length && this.#imagesList) {
-      this.#imagesList.innerHTML = '';
-      for (const image of product.images) {
-        this.#addImageToList(image.url, image.source);
-      }
+    // Рендерим изображения через SortableList
+    if (product?.images?.length) {
+      this.#renderImagesList(product.images);
+    } else {
+      // Создаем пустой SortableList
+      this.#renderImagesList([]);
     }
   }
 
-  #addImageToList(url, source) {
+  #renderImagesList(images) {
+    // Уничтожаем предыдущий экземпляр SortableList, если он был
+    if (this.#sortableList) {
+      this.#sortableList.destroy();
+    }
+
+    // Создаем элементы для SortableList
+    const items = images.map(image => this.#createImageElement(image.url, image.source));
+
+    // Создаем новый экземпляр SortableList
+    this.#sortableList = new SortableList({
+      items: items
+    });
+
+    // Вставляем SortableList в контейнер
+    const container = this.subElements.sortableListContainer;
+    container.innerHTML = '';
+    container.append(this.#sortableList.element);
+  }
+
+  #createImageElement(url, source) {
     const li = document.createElement('li');
     li.className = 'products-edit__imagelist-item sortable-list__item';
 
@@ -181,7 +191,7 @@ export default class ProductForm extends Component {
       </button>
     `;
 
-    this.#imagesList.appendChild(li);
+    return li;
   }
 
   async #uploadImage() {
@@ -194,6 +204,7 @@ export default class ProductForm extends Component {
       if (!file) {return;}
 
       this.#uploadButton.classList.add('is-loading');
+      this.#uploadButton.disabled = true;
 
       const formData = new FormData();
       formData.append('image', file);
@@ -210,7 +221,21 @@ export default class ProductForm extends Component {
         const data = await response.json();
         
         if (data.success) {
-          this.#addImageToList(data.data.link, file.name);
+          // Добавляем новое изображение в SortableList
+          const newImageElement = this.#createImageElement(data.data.link, file.name);
+          
+          // Получаем текущие элементы SortableList
+          const currentItems = this.#sortableList.items;
+          
+          // Создаем новый SortableList с добавленным элементом
+          this.#sortableList.destroy();
+          this.#sortableList = new SortableList({
+            items: [...currentItems, newImageElement]
+          });
+          
+          const container = this.subElements.sortableListContainer;
+          container.innerHTML = '';
+          container.append(this.#sortableList.element);
         } else {
           throw new Error('Failed to upload image');
         }
@@ -219,6 +244,7 @@ export default class ProductForm extends Component {
         alert('Ошибка загрузки изображения');
       } finally {
         this.#uploadButton.classList.remove('is-loading');
+        this.#uploadButton.disabled = false;
       }
     };
 
@@ -236,20 +262,25 @@ export default class ProductForm extends Component {
       }
     }
     
-    // Собираем изображения
+    // Собираем изображения из SortableList
     const images = [];
-    const imageItems = this.#imagesList?.querySelectorAll('.sortable-list__item') || [];
-
-    for (const item of imageItems) {
-      const urlInput = item.querySelector('input[name="url"]');
-      const sourceInput = item.querySelector('input[name="source"]');
-      if (urlInput?.value) {
-        images.push({
-          url: urlInput.value,
-          source: sourceInput?.value || ''
-        });
+    
+    if (this.#sortableList) {
+      const imageItems = this.#sortableList.items;
+      
+      for (const item of imageItems) {
+        const urlInput = item.querySelector('input[name="url"]');
+        const sourceInput = item.querySelector('input[name="source"]');
+        
+        if (urlInput?.value) {
+          images.push({
+            url: urlInput.value,
+            source: sourceInput?.value || ''
+          });
+        }
       }
     }
+    
     data.images = images;
     
     return data;
