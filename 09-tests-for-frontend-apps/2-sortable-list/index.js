@@ -31,7 +31,6 @@ export default class SortableList extends Component {
     super.destroy();
   }
 
-
   #initListeners() {
     this.element.addEventListener('pointerdown', this.#boundOnPointerDown);
   }
@@ -96,20 +95,31 @@ export default class SortableList extends Component {
       child => child !== this.#draggingElement && child !== this.#placeholder
     );
 
+    let targetElement = null;
+
+    // Ищем элемент, перед которым нужно вставить плейсхолдер
     for (const item of items) {
       const rect = item.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
 
-      if (y < midY) {
-        if (this.#placeholder.previousSibling !== item) {
-          this.element.insertBefore(this.#placeholder, item);
-        }
-        return;
+      // Сравниваем позицию курсора с серединой элемента
+      if (e.clientY < midY) {
+        targetElement = item;
+        break;
       }
     }
 
-    if (this.#placeholder.nextSibling !== null) {
-      this.element.appendChild(this.#placeholder);
+    // Если нашли элемент для вставки перед
+    if (targetElement) {
+    // Вставляем плейсхолдер перед найденным элементом
+      if (this.#placeholder.nextSibling !== targetElement) {
+        this.element.insertBefore(this.#placeholder, targetElement);
+      }
+    } else {
+    // Если не нашли элемент (курсор ниже всех элементов), вставляем в конец
+      if (this.#placeholder.nextSibling !== null) {
+        this.element.appendChild(this.#placeholder);
+      }
     }
   };
 
