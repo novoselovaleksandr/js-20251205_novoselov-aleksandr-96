@@ -9,6 +9,10 @@ export default class ProductForm extends Component {
   productId = null;
   #subcategoriesSelect = null;
   #imagesList = null;
+  #saveButton = null;
+  #uploadButton = null;
+  #boundSave = null;
+  #boundUploadImage = null;
   subElements = {};
   #defaultFields = [
     'title',
@@ -20,15 +24,49 @@ export default class ProductForm extends Component {
     'discount'
   ];
 
-  constructor (productId) {
+  constructor(productId) {
     super();
 
     this.productId = productId ?? this.productId;
 
     this.html = this.template();
+
     this.#subcategoriesSelect = this.element.querySelector('#subcategory');
     this.#initSubElements();
     this.#imagesList = this.subElements.imageListContainer?.querySelector('.sortable-list');
+
+    this.#saveButton = this.element.querySelector('[name="save"]');
+    this.#uploadButton = this.element.querySelector('[name="uploadImage"]');
+
+    this.#boundSave = this.save.bind(this);
+    this.#boundUploadImage = this.#uploadImage.bind(this);
+
+    this.#initListeners();
+  }
+
+  #initListeners() {
+    this.#saveButton.addEventListener('click', this.#boundSave);
+    this.#uploadButton.addEventListener('click', this.#boundUploadImage);
+
+    // Делегирование для кнопок удаления изображений
+    this.subElements.imageListContainer.addEventListener('click', (event) => {
+      if (event.target.closest('[data-delete-handle]')) {
+        const item = event.target.closest('.sortable-list__item');
+        if (item) {
+          item.remove();
+        }
+      }
+    });
+  }
+
+  #removeListeners() {
+    this.#saveButton.removeEventListener('click', this.#boundSave);
+    this.#uploadButton.removeEventListener('click', this.#boundUploadImage);
+  }
+
+  destroy() {
+    this.#removeListeners();
+    super.destroy();
   }
 
   template() {
@@ -77,7 +115,7 @@ export default class ProductForm extends Component {
           </div>
           <div class="form-buttons">
             <button type="submit" name="save" class="button-primary-outline">
-              Сохранить товар
+              ${this.productId ? 'Сохранить товар' : 'Добавить товар'}
             </button>
           </div>
         </form>
@@ -110,37 +148,80 @@ export default class ProductForm extends Component {
   #renderProductData(product) {
     for (const field of this.#defaultFields) {
       const el = this.element.querySelector(`#${field}`);
-      const value = product[field];
+      const value = product?.[field];
       if (el && value !== undefined) {
         el.value = value;
       }
     }
     
     // Рендерим изображения
-    if (product.images?.length && this.#imagesList) {
+    if (product?.images?.length && this.#imagesList) {
       this.#imagesList.innerHTML = '';
       for (const image of product.images) {
-        const li = document.createElement('li');
-        li.className = 'products-edit__imagelist-item sortable-list__item';
-        const url = image.url;
-        const source = image.source;
-
-        li.innerHTML = `
-            <input type="hidden" name="url" value="${escapeHtml(url)}">
-            <input type="hidden" name="source" value="${escapeHtml(source)}">
-            <span>
-              <img src="icon-grab.svg" data-grab-handle alt="grab">
-              <img class="sortable-table__cell-img" alt="${escapeHtml(source)}" src="${escapeHtml(url)}">
-              <span>${escapeHtml(source)}</span>
-            </span>
-            <button type="button">
-              <img src="icon-trash.svg" data-delete-handle alt="delete">
-            </button>
-          `;
-
-        this.#imagesList.appendChild(li);
+        this.#addImageToList(image.url, image.source);
       }
     }
+  }
+
+  #addImageToList(url, source) {
+    const li = document.createElement('li');
+    li.className = 'products-edit__imagelist-item sortable-list__item';
+
+    li.innerHTML = `
+      <input type="hidden" name="url" value="${escapeHtml(url)}">
+      <input type="hidden" name="source" value="${escapeHtml(source)}">
+      <span>
+        <img src="icon-grab.svg" data-grab-handle alt="grab">
+        <img class="sortable-table__cell-img" alt="${escapeHtml(source)}" src="${escapeHtml(url)}">
+        <span>${escapeHtml(source)}</span>
+      </span>
+      <button type="button">
+        <img src="icon-trash.svg" data-delete-handle alt="delete">
+      </button>
+    `;
+
+    this.#imagesList.appendChild(li);
+  }
+
+  async #uploadImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) {return;}
+
+      this.#uploadButton.classList.add('is-loading');
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Client-ID ${IMGUR_CLIENT_ID}`
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          this.#addImageToList(data.data.link, file.name);
+        } else {
+          throw new Error('Failed to upload image');
+        }
+      } catch (error) {
+        console.error('Image upload error:', error);
+        alert('Ошибка загрузки изображения');
+      } finally {
+        this.#uploadButton.classList.remove('is-loading');
+      }
+    };
+
+    input.click();
   }
 
   #getFormData() {
@@ -173,19 +254,27 @@ export default class ProductForm extends Component {
     return data;
   }
 
-  async save() {
+  async save(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
     const formData = this.#getFormData();
     
-    const url = this.productId 
-      ? `${BACKEND_URL}/api/rest/products/${this.productId}`
-      : `${BACKEND_URL}/api/rest/products`;
+    const dataToSend = { ...formData };
+
+    if (this.productId) {
+      dataToSend.id = this.productId;
+    }
+
+    const url = `${BACKEND_URL}/api/rest/products`;
     
-    const method = this.productId ? 'PUT' : 'POST';
+    const method = this.productId ? 'PATCH' : 'PUT';
     
     const result = await fetchJson(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(dataToSend)
     });
     
     // Dispatch события в зависимости от режима
@@ -199,7 +288,7 @@ export default class ProductForm extends Component {
   }
 
   async render() {
-    const categoriesPromise = fetchJson(`${BACKEND_URL}/api/rest/categories?_refs=subcategory`);
+    const categoriesPromise = fetchJson(`${BACKEND_URL}/api/rest/categories?_sort=weight&_refs=subcategory`);
     const productPromise = this.productId 
       ? fetchJson(`${BACKEND_URL}/api/rest/products/?id=${this.productId}`).then(data => data[0])
       : Promise.resolve(null);
