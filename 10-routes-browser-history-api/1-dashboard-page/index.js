@@ -9,16 +9,43 @@ import fetchJson from './utils/fetch-json.js';
 const BACKEND_URL = 'https://course-js.javascript.ru/';
 
 export default class Page extends Component {
+  #rangePicker = null;
+
   constructor() {
     super();
-  }
-
-  #template() {
-    return ``;
-  }
-
-  render() {
+    
     this.html = this.#template();
   }
 
+  async render() {
+    this.#rangePicker = new RangePicker();
+    this.element.querySelector('[data-element="rangePicker"]').append(this.#rangePicker.element);
+
+    return this.element;
+
+  }
+
+  #template() {
+    return `
+      <div class="dashboard">
+        <div class="content__top-panel">
+          <h2 class="page-title">Dashboard</h2>
+          <!-- RangePicker component -->
+          <div data-element="rangePicker"></div>
+        </div>
+        <div data-element="chartsRoot" class="dashboard__charts">
+          <!-- column-chart components -->
+          <div data-element="ordersChart" class="dashboard__chart_orders"></div>
+          <div data-element="salesChart" class="dashboard__chart_sales"></div>
+          <div data-element="customersChart" class="dashboard__chart_customers"></div>
+        </div>
+
+        <h3 class="block-title">Best sellers</h3>
+
+        <div data-element="sortableTable">
+          <!-- sortable-table component -->
+        </div>
+      </div>
+    `;
+  }
 }
