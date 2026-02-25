@@ -23,7 +23,16 @@ export default class Page extends Component {
     this.#rangePicker = new RangePicker();
     this.element.querySelector('[data-element="rangePicker"]').append(this.#rangePicker.element);
 
-    this.#sortableTable = new SortableTable(header);
+    this.#sortableTable = new SortableTable(header, {
+      url: 'api/dashboard/bestsellers',
+      sorted: {
+        id: 'title',
+        order: 'asc',
+      },
+      isSortLocally: true,
+      start: 0,
+      end: 30,
+    });
     this.element.querySelector('[data-element="sortableTable"]').append(this.#sortableTable.element);
     this.subElements.sortableTable = this.#sortableTable.element;
 
