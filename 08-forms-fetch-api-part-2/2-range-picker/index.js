@@ -14,8 +14,16 @@ export default class RangePicker extends Component {
 
   constructor({ from, to } = {}) {
     super();
-    this.from = from ?? this.from;
-    this.to = to ?? this.to;
+    
+    if (!from && !to) {
+      const today = new Date();
+      this.to = today;
+      this.from = new Date(today);
+      this.from.setDate(today.getDate() - 29); // 30 дней включая сегодня
+    } else {
+      this.from = from ?? this.from;
+      this.to = to ?? this.to;
+    }
 
     // Инициализируем текущий месяц для отображения
     if (this.from) {

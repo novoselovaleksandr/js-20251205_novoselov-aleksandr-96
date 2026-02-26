@@ -1,5 +1,5 @@
 import { Component } from "../../components/component.js";
-import RangePicker from './components/range-picker/src/index.js';
+import RangePicker from '../../08-forms-fetch-api-part-2/2-range-picker/index.js';
 import SortableTable from './components/sortable-table/src/index.js';
 import ColumnChart from './components/column-chart/src/index.js';
 import header from './bestsellers-header.js';
