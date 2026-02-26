@@ -1,6 +1,6 @@
 import { Component } from "../../components/component.js";
 import RangePicker from '../../08-forms-fetch-api-part-2/2-range-picker/index.js';
-import SortableTable from './components/sortable-table/src/index.js';
+import SortableTable from '../../07-async-code-fetch-api-part-1/2-sortable-table-v3/index.js';
 import ColumnChart from './components/column-chart/src/index.js';
 import header from './bestsellers-header.js';
 
@@ -25,14 +25,7 @@ export default class Page extends Component {
     this.subElements.rangePicker = this.#rangePicker.element;
 
     this.#sortableTable = new SortableTable(header, {
-      url: 'api/dashboard/bestsellers',
-      sorted: {
-        id: 'title',
-        order: 'asc',
-      },
-      isSortLocally: true,
-      start: 0,
-      end: 30,
+      url: 'api/dashboard/bestsellers'
     });
     this.element.querySelector('[data-element="sortableTable"]').append(this.#sortableTable.element);
     this.subElements.sortableTable = this.#sortableTable.element;
