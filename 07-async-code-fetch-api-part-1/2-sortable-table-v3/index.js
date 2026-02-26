@@ -17,9 +17,9 @@ export default class SortableTable extends Component {
   #isLoading = false;
   #url = null;
   #start = 0;
-  #end = 20;
+  #end = 30;
   #scrollHandler = null;
-  #step = 20;
+  #step = 30;
   #loadPromise = null;
 
   constructor(headerConfig = [], {
@@ -30,7 +30,10 @@ export default class SortableTable extends Component {
     super();
     this.#headerConfig = headerConfig;
     this.#data = data;
-    this.#sorted = this.#headerConfig.find(item => item.sortable)?.id;
+    this.#sorted = {
+      id: this.#headerConfig.find(item => item.sortable)?.id,
+      order: 'asc',
+    };
     this.#isSortLocally = isSortLocally;
     this.#url = url;
     this.#start = 0;
