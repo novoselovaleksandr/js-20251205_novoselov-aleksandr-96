@@ -9,7 +9,6 @@ export default class ColumnChart extends Component {
   #from = '';
   #to = '';
   #label = '';
-  #value = 0;
   #link = '#';
   #url = '';
   chartHeight = 50;
@@ -24,7 +23,6 @@ export default class ColumnChart extends Component {
     this.#from = range.from;
     this.#to = range.to;
     this.#label = label;
-    this.#value = value;
     this.#link = link;
     this.#url = url;
     this.#formatHeading = formatHeading;
