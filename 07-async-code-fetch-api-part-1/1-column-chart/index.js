@@ -13,11 +13,19 @@ export default class ColumnChart extends Component {
   #url = '';
   chartHeight = 50;
   #formatHeading = data => data;
+  #subElements = {};
 
   constructor(options = {}) {
     super();
-
-    const { url = '', data = [], range = {from: '', to: ''}, label = '', value = 0, link = '#', formatHeading = data => data} = options;
+    
+    const { 
+      url = '', 
+      data = [], 
+      range = {from: '', to: ''}, 
+      label = '', 
+      link = '#', 
+      formatHeading = data => data
+    } = options;
 
     this.#data = data;
     this.#from = range.from;
@@ -28,16 +36,21 @@ export default class ColumnChart extends Component {
     this.#formatHeading = formatHeading;
 
     this.render();
-    this.update(this.#from, this.#to);
+
+    if (this.#url && this.#from && this.#to) {
+      this.update(this.#from, this.#to);
+    }
   }
 
   get subElements() {
-    const result = {};
+    return this.#subElements;
+  }
+
+  #updateSubElements() {
     if (this.element) {
-      result.header = this.element.querySelector('[data-element="header"]');
-      result.body = this.element.querySelector('[data-element="body"]');
+      this.#subElements.header = this.element.querySelector('[data-element="header"]');
+      this.#subElements.body = this.element.querySelector('[data-element="body"]');
     }
-    return result;
   }
 
   isEmpty() {
@@ -54,21 +67,48 @@ export default class ColumnChart extends Component {
       }
 
       this.#isDataLoading = true;
-      this.render();
+      this.#updateElementState();
+      
       const data = await fetchJson(url);
       const values = Object.values(data);
       this.#data = values;
       this.#isDataLoading = false;
-      this.render();
+      
+      this.#updateElementState();
 
       return data;
     } catch (err) {
       console.error('Failed to load data:', err);
       this.#data = [];
       this.#isDataLoading = false;
-      this.render();
+      this.#updateElementState();
 
       return {};
+    }
+  }
+
+  #updateElementState() {
+    if (!this.element) {return;}
+    
+    // Обновляем класс загрузки
+    if (this.#isDataLoading || this.isEmpty()) {
+      this.element.classList.add('column-chart_loading');
+    } else {
+      this.element.classList.remove('column-chart_loading');
+    }
+    
+    // Обновляем содержимое
+    const headerElement = this.element.querySelector('[data-element="header"]');
+    const bodyElement = this.element.querySelector('[data-element="body"]');
+    
+    if (headerElement) {
+      headerElement.textContent = this.getTotalValue();
+    }
+    
+    if (bodyElement) {
+      const maxValue = Math.max(...this.#data);
+      const scale = this.chartHeight / (maxValue || 1);
+      bodyElement.innerHTML = this.isEmpty() ? '' : this.getColumns(maxValue, scale);
     }
   }
 
@@ -87,10 +127,10 @@ export default class ColumnChart extends Component {
     const maxValue = this.isEmpty() ? 0 : Math.max(...this.#data);
     const scale = this.chartHeight / maxValue;
 
-    return `<div class="column-chart ${this.isEmpty() || this.#isDataLoading ? 'column-chart_loading' : '' }" style="--chart-height: 50">
+    return `<div class="column-chart ${this.isEmpty() || this.#isDataLoading ? 'column-chart_loading' : ''}" style="--chart-height: 50">
               <div class="column-chart__title">
                 Total ${this.#label}
-                ${this.isEmpty() ? `<a class="column-chart__link" href="${this.#link}">View all</a>` : ''}
+                ${this.#link !== '#' ? `<a class="column-chart__link" href="${this.#link}">View all</a>` : ''}
               </div>
               <div class="column-chart__container">
                 <div data-element="header" class="column-chart__header">${this.getTotalValue()}</div>
@@ -98,17 +138,11 @@ export default class ColumnChart extends Component {
                   ${this.isEmpty() ? '' : this.getColumns(maxValue, scale)}
                 </div>
               </div>
-              </div>`;
+            </div>`;
   }
 
   render() {
-    const oldElement = this.element;
-
     this.html = this.template();
-
-    if (oldElement && oldElement.parentNode) {
-      // Заменяем старый элемент новым в родителе
-      oldElement.parentNode.replaceChild(this.element, oldElement);
-    }
+    this.#updateSubElements();
   }
 }
