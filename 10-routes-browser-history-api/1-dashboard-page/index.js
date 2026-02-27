@@ -70,9 +70,7 @@ export default class Page extends Component {
 
     this.#initListeners();
 
-
     return this.element;
-
   }
 
   #initListeners() {
@@ -83,10 +81,24 @@ export default class Page extends Component {
     this.element.removeEventListener('date-select', this.#boundUpdateComponents);
   }
    
+  /**
+   * Обновляет все компоненты при изменении даты в RangePicker
+   * @param {CustomEvent} event - событие с detail: { from, to }
+   */
   #updateComponents(event) {
-    const { from, to} = event.detail;
+    const { from, to } = event.detail;
 
     this.#sortableTable.updateDateAndLoadData(from, to);
+    
+    const charts = [
+      this.#ordersChart,
+      this.#salesChart,
+      this.#customersChart
+    ];
+
+    charts.forEach(chart => {
+      chart.update(from, to);
+    });
   }
 
   destroy() {

@@ -57,7 +57,17 @@ export default class ColumnChart extends Component {
     return this.#data?.length === 0;
   }
 
-  update = async (from, to) => {
+  /**
+   * Обновляет данные ColumnChart за указанный период
+   * @param {Date} from - начальная дата
+   * @param {Date} to - конечная дата
+   * @returns {Promise<Object>} - загруженные данные
+   */
+  async update(from, to) {
+    // Сохраняем новый диапазон дат
+    this.#from = from;
+    this.#to = to;
+
     try {
       let url = new URL(this.#url, BACKEND_URL);
 
@@ -78,7 +88,6 @@ export default class ColumnChart extends Component {
 
       return data;
     } catch (err) {
-      console.error('Failed to load data:', err);
       this.#data = [];
       this.#isDataLoading = false;
       this.#updateElementState();
