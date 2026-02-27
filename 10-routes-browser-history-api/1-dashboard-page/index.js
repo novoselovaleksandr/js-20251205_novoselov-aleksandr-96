@@ -26,7 +26,8 @@ export default class Page extends Component {
     this.subElements.rangePicker = this.#rangePicker.element;
 
     this.#sortableTable = new SortableTable(header, {
-      url: 'api/dashboard/bestsellers'
+      url: 'api/dashboard/bestsellers',
+      isSortLocally: true,
     });
     this.element.querySelector('[data-element="sortableTable"]').append(this.#sortableTable.element);
     this.subElements.sortableTable = this.#sortableTable.element;
