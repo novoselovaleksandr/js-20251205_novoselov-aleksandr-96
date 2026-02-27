@@ -11,11 +11,13 @@ const BACKEND_URL = 'https://course-js.javascript.ru/';
 export default class Page extends Component {
   #rangePicker = null;
   #sortableTable = null;
+  #boundUpdateComponents = null;
   subElements = {}
 
   constructor() {
     super();
     
+    this.#boundUpdateComponents = this.#updateComponents.bind(this);
     this.html = this.#template();
   }
 
@@ -30,8 +32,30 @@ export default class Page extends Component {
     this.element.querySelector('[data-element="sortableTable"]').append(this.#sortableTable.element);
     this.subElements.sortableTable = this.#sortableTable.element;
 
+    this.#initListeners();
+
+
     return this.element;
 
+  }
+
+  #initListeners() {
+    this.element.addEventListener('date-select', this.#boundUpdateComponents);
+  }
+
+  #removeListeners() {
+    this.element.removeEventListener('date-select', this.#boundUpdateComponents);
+  }
+   
+  #updateComponents(event) {
+    const { from, to} = event.detail;
+
+    this.#sortableTable.updateDateAndLoadData(from, to);
+  }
+
+  destroy() {
+    this.#removeListeners();
+    super.destroy();
   }
 
   #template() {

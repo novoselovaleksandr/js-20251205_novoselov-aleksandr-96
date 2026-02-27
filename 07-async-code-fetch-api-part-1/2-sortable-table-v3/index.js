@@ -28,8 +28,8 @@ export default class SortableTable extends Component {
     url = '',
     data = [],
     isSortLocally = false,
-    from = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString(), // 30 дней, включая сегодня
-    to = new Date().toISOString()
+    from = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000), // 30 дней, включая сегодня
+    to = new Date()
   } = {}) {
     super();
     this.#headerConfig = headerConfig;
@@ -88,6 +88,7 @@ export default class SortableTable extends Component {
     
     this.#isLoading = true;
     this.#toggleLoader();
+    this.#hideBody();
 
     try {
       const params = new URLSearchParams({
@@ -99,10 +100,10 @@ export default class SortableTable extends Component {
 
       if (!append) {
         if (this.#from) {
-          params.append('from', this.#from);
+          params.append('from', this.#from.toISOString());
         }
         if (this.#to) {
-          params.append('to', this.#to);
+          params.append('to', this.#to.toISOString());
         }
       }
 
@@ -128,6 +129,7 @@ export default class SortableTable extends Component {
     } finally {
       this.#isLoading = false;
       this.#toggleLoader();
+      this.#showBody();
       this.#updateEmptyState();
     }
   }
@@ -136,6 +138,14 @@ export default class SortableTable extends Component {
     if (this.#sortableTable) {
       this.#sortableTable.classList.toggle('sortable-table_loading');
     }
+  }
+
+  #hideBody() {
+    this.#bodyElement.style.display = 'none';
+  }
+
+  #showBody() {
+    this.#bodyElement.style.display = '';
   }
 
   #updateEmptyState = () => {
@@ -201,6 +211,15 @@ export default class SortableTable extends Component {
     
     this.#scrollHandler = this.#onScroll.bind(this);
     window.addEventListener('scroll', this.#scrollHandler);
+  }
+
+  async updateDateAndLoadData(from, to) {
+    this.#from = from;
+    this.#to = to;
+    this.#start = 0;
+    this.#end = this.#step;
+    this.#isLoading = false;
+    await this.loadData();
   }
 
   #removeListeners() {
