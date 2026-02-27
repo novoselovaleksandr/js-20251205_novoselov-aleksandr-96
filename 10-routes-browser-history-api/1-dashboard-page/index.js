@@ -1,16 +1,15 @@
 import { Component } from "../../components/component.js";
 import RangePicker from '../../08-forms-fetch-api-part-2/2-range-picker/index.js';
 import SortableTable from '../../07-async-code-fetch-api-part-1/2-sortable-table-v3/index.js';
-import ColumnChart from './components/column-chart/src/index.js';
+import ColumnChart from '../../07-async-code-fetch-api-part-1/1-column-chart/index.js';
 import header from './bestsellers-header.js';
-
-import fetchJson from './utils/fetch-json.js';
-
-const BACKEND_URL = 'https://course-js.javascript.ru/';
 
 export default class Page extends Component {
   #rangePicker = null;
   #sortableTable = null;
+  #ordersChart = null;
+  #salesChart = null;
+  #customersChart = null;
   #boundUpdateComponents = null;
   subElements = {}
 
@@ -31,6 +30,43 @@ export default class Page extends Component {
     });
     this.element.querySelector('[data-element="sortableTable"]').append(this.#sortableTable.element);
     this.subElements.sortableTable = this.#sortableTable.element;
+
+    const from = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000); // 30 дней, включая сегодня
+    const to = new Date();
+
+    this.#ordersChart = new ColumnChart({
+      url: 'api/dashboard/orders',
+      range: {
+        from,
+        to
+      },
+      label: 'orders',
+    });
+    this.element.querySelector('[data-element="ordersChart"]').append(this.#ordersChart.element);
+    this.subElements.ordersChart = this.#ordersChart.element;
+
+    this.#salesChart = new ColumnChart({
+      url: 'api/dashboard/sales',
+      range: {
+        from,
+        to
+      },
+      label: 'sales',
+      formatHeading: data => `$${data}`
+    });
+    this.element.querySelector('[data-element="salesChart"]').append(this.#salesChart.element);
+    this.subElements.salesChart = this.#salesChart.element;
+
+    this.#customersChart = new ColumnChart({
+      url: 'api/dashboard/customers',
+      range: {
+        from,
+        to
+      },
+      label: 'customers',
+    });
+    this.element.querySelector('[data-element="customersChart"]').append(this.#customersChart.element);
+    this.subElements.customersChart = this.#customersChart.element;
 
     this.#initListeners();
 
